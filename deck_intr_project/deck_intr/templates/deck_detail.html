@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- deck_detail.html -->
+{% block title %}{{ deck.title }}{% endblock %}
+{% block h1 %}{{ deck.title }}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            {% if deck.thumbnail %}
+            <img src="{{ deck.thumbnail.url }}" alt="{{ deck.title }}" class="img-fluid mb-3">
+            {% endif %}
+            
+            <div class="details">
+                {% if deck.video %}
+                <div class="mb-3">
+                    <h3>動画</h3>
+                    <video controls class="w-100" style="max-width: 800px;">
+                        <source src="{{ deck.video.url }}" type="video/mp4">
+                        お使いのブラウザは動画タグに対応していません。
+                    </video>
+                </div>
+                {% endif %}
+                
+                <div class="mb-4">
+                    <h3>説明</h3>
+                    <p class="text-break">{{ deck.text|linebreaks }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">デッキ情報</h5>
+                    
+                    <p class="mb-2">
+                        <strong>投稿者:</strong> <a href="{% url 'my_page:user_page' deck.user.username %}">{{ deck.user.username }}</a>
+                    </p>
+                    
+                    <p class="mb-2">
+                        <strong>投稿日:</strong> {{ deck.created_at|date:"Y年m月d日" }}
+                    </p>
+                    
+                    <div class="mb-3">
+                        <strong>カテゴリー:</strong><br>
+                        {% for category in deck.categories.all %}
+                        <span class="badge bg-primary">{{ category.name }}</span>
+                        {% empty %}
+                        <span class="text-muted">なし</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    {% if request.user.is_authenticated %}
+                    <button class="btn btn-danger w-100 mb-2" id="likeBtn" 
+                            data-deck-id="{{ deck.id }}"
+                            data-is-liked="{{ is_liked|yesno:'true,false' }}">
+                        <i class="fas fa-heart {% if is_liked %}{% else %}far{% endif %}"></i>
+                        <span id="likeText">{% if is_liked %}いいね済み{% else %}いいね{% endif %}</span>
+                        <span class="badge bg-light text-dark" id="likesCount">{{ likes_count }}</span>
+                    </button>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-heart"></i> {{ likes_count }} いいね<br>
+                        <small>いいねするにはログインしてください</small>
+                    </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'deck_intr:deck_search' %}" class="btn btn-secondary w-100">
+                        一覧に戻る
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const likeBtn = document.getElementById('likeBtn');
+    
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+            const deckId = this.dataset.deckId;
+            const heartIcon = this.querySelector('i');
+            const likeText = document.getElementById('likeText');
+            const likesCount = document.getElementById('likesCount');
+            
+            fetch(`/decks/${deckId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_liked) {
+                        heartIcon.classList.remove('far');
+                        heartIcon.classList.add('fas');
+                        likeText.textContent = 'いいね済み';
+                        this.classList.add('active');
+                    } else {
+                        heartIcon.classList.remove('fas');
+                        heartIcon.classList.add('far');
+                        likeText.textContent = 'いいね';
+                        this.classList.remove('active');
+                    }
+                    
+                    likesCount.textContent = data.likes_count;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- deck_search.html -->
+{% block title %}デッキ検索{% endblock %}
+{% block h1 %}デッキ検索{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    
+    <!-- 検索フォーム -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0 text-center">検索条件</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" id="searchForm">
+                <div class="row">
+                    <div class="mb-3">
+                        {{ form.keyword.label_tag }}
+                        {{ form.keyword }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.username.label_tag }}
+                        {{ form.username }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.order.label_tag }}
+                        {{ form.order }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.categories.label_tag }}
+                    <div class="d-flex flex-wrap gap-2">
+                        {{ form.categories }}
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> 検索
+                    </button>
+                    <a href="{% url 'deck_intr:deck_search' %}" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> リセット
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 検索結果 -->
+    <div class="mb-3">
+        <h5>検索結果: {{ total_count }}件</h5>
+    </div>
+    
+    {% if decks %}
+    <div class="row">
+        {% for deck in decks %}
+        <div class="col-md-4 mb-4">
+            <div class="card deck-card h-100" data-deck-url="{% url 'deck_intr:deck_detail' deck.pk %}">
+                {% if deck.thumbnail %}
+                <img src="{{ deck.thumbnail.url }}" class="card-img-top" alt="{{ deck.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <span class="text-white">No Image</span>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h5 class="card-title">{{ deck.title }}</h5>
+                    <p class="card-text">{{ deck.text|truncatewords:20 }}</p>
+                    
+                    <div class="mb-2">
+                        {% for category in deck.categories.all %}
+                        <span class="badge bg-primary">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-user"></i> <a href="{% url 'my_page:user_page' deck.user.username %}" onclick="event.stopPropagation();">{{ deck.user.username }}</a>
+                            <br>
+                            <i class="fas fa-calendar"></i> {{ deck.created_at|date:"Y/m/d" }}
+                        </small>
+                    </p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="btn btn-primary btn-sm" onclick="event.stopPropagation();">詳細を見る</a>
+                        
+                        {% if request.user.is_authenticated %}
+                        <button class="btn btn-outline-danger btn-sm like-btn" onclick="event.stopPropagation();"
+                                data-deck-id="{{ deck.id }}"
+                                data-is-liked="{{ deck.is_liked_by|yesno:'true,false' }}">
+                            <i class="fas fa-heart {% if deck.is_liked_by %}text-danger{% endif %}"></i>
+                            <span class="likes-count">{{ deck.likes_count }}</span>
+                        </button>
+                        {% else %}
+                        <span class="text-muted">
+                            <i class="far fa-heart"></i> {{ deck.likes_count }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- ページネーション -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">最初</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">前へ</a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">次へ</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">最後</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle"></i> 検索条件に一致するデッキが見つかりませんでした
+    </div>
+    {% endif %}
+    
+</div>
+
+<style>
+/* カテゴリーチェックボックスのスタイル調整 */
+#id_categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#id_categories label {
+    display: inline-flex;
+    align-items: center;
+    /* background: #f8f9fa; */
+    background: #444;
+    padding: 5px 15px;
+    border-radius: 20px;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#id_categories label:hover {
+    /* background: #e9ecef; */
+    background: #3a3a3a;
+}
+
+#id_categories input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+#id_categories input[type="checkbox"]:checked + * {
+    font-weight: bold;
+}
+
+/* いいねボタンのアニメーション */
+.like-btn {
+    transition: all 0.3s;
+}
+
+.like-btn:hover {
+    transform: scale(1.1);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // いいねボタンの処理
+    const likeButtons = document.querySelectorAll('.like-btn');
+    
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const deckId = this.dataset.deckId;
+            const heartIcon = this.querySelector('i');
+            const countSpan = this.querySelector('.likes-count');
+            
+            fetch(`/decks/${deckId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // いいね状態を切り替え
+                    if (data.is_liked) {
+                        heartIcon.classList.remove('far');
+                        heartIcon.classList.add('fas', 'text-danger');
+                    } else {
+                        heartIcon.classList.remove('fas', 'text-danger');
+                        heartIcon.classList.add('far');
+                    }
+                    
+                    // いいね数を更新
+                    countSpan.textContent = data.likes_count;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

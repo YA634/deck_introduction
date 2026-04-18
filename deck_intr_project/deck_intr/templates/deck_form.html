@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+<!-- deck_form.html -->
+{% block title %}デッキ投稿{% endblock %}
+{% block h1 %}デッキ投稿{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <form method="post" enctype="multipart/form-data" class="p-4 bg-light border rounded">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <div class="mb-3">
+                {{ form.title.label_tag }}
+                {{ form.title }}
+                {% if form.title.errors %}
+                <div class="text-danger">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.text.label_tag }}
+                {{ form.text }}
+                {% if form.text.errors %}
+                <div class="text-danger">{{ form.text.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.thumbnail.label_tag }}
+                {{ form.thumbnail }}
+                {% if form.thumbnail.errors %}
+                <div class="text-danger">{{ form.thumbnail.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.video.label_tag }}
+                {{ form.video }}
+                <small class="form-text text-muted">動画ファイル（MP4, MOV等）</small>
+                {% if form.video.errors %}
+                <div class="text-danger">{{ form.video.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">カテゴリー（複数選択可）</label>
+                <div id="categoriesContainer">
+                    {% for category in form.categories %}
+                        {{ category }}
+                    {% endfor %}
+                </div>
+                <br>
+                <small class="form-text text-muted">複数選択できます</small>
+                {% if form.categories.errors %}
+                <div class="text-danger">{{ form.categories.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <hr>
+            
+            <h5 class="mb-3">新規カテゴリー追加</h5>
+            
+            <div id="addCategoryAlert" class="alert" style="display:none;"></div>
+<!-- 
+            <div class="mb-3">
+                {{ form.new_category_name.label_tag }}
+                {{ form.new_category_name }}
+                <small class="form-text text-muted">新しいカテゴリーを追加する場合のみ入力</small>
+                {% if form.new_category_name.errors %}
+                <div class="text-danger">{{ form.new_category_name.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.new_category_slug.label_tag }}
+                {{ form.new_category_slug }}
+                <small class="form-text text-muted">URL用の英数字とハイフン（例: exodia, special-win）</small>
+                {% if form.new_category_slug.errors %}
+                <div class="text-danger">{{ form.new_category_slug.errors }}</div>
+                {% endif %}
+            </div> -->
+            <div class="mb-3">
+                <label for="newCategoryName" class="form-label">カテゴリー名</label>
+                <input type="text" id="newCategoryName" class="form-control" placeholder="例: エクゾディア">
+            </div>
+            
+            <div class="mb-3">
+                <label for="newCategorySlug" class="form-label">スラッグ（英数字）</label>
+                <input type="text" id="newCategorySlug" class="form-control" placeholder="例: exodia">
+                <small class="form-text text-muted">URL用の英数字とハイフン</small>
+            </div>
+            <button type="button" class="btn btn-secondary mb-3" id="addCategoryBtn">
+                <i class="fas fa-plus"></i> カテゴリーを追加
+            </button>
+            <hr>
+            <button type="submit" class="btn btn-primary">作成</button>
+            <a href={% url 'my_page:my_page' %} class="btn btn-secondary">キャンセル</a>
+        </form>
+    </div>
+    <br>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.querySelector('input[name="new_category_name"]');
+            const slugInput = document.querySelector('input[name="new_category_slug"]');
+            
+            if (nameInput && slugInput) {
+                nameInput.addEventListener('input', function() {
+                    // 日本語から簡易的なスラッグを生成（手動修正可能）
+                    const name = this.value.trim();
+                    if (name && !slugInput.value) {
+                        // ひらがな・カタカナをローマ字に変換（簡易版）
+                        const slug = name
+                            .toLowerCase()
+                            .replace(/\s+/g, '-')
+                            .replace(/[^a-z0-9\-]/g, '');
+                        slugInput.value = slug || 'new-category';
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addBtn = document.getElementById('addCategoryBtn');
+            const nameInput = document.getElementById('newCategoryName');
+            const slugInput = document.getElementById('newCategorySlug');
+            const alertBox = document.getElementById('addCategoryAlert');
+            const categoriesContainer = document.getElementById('categoriesContainer');
+            
+            // アラート表示関数
+            function showAlert(message, type) {
+                alertBox.className = `alert alert-${type}`;
+                alertBox.textContent = message;
+                alertBox.style.display = 'block';
+                setTimeout(() => {
+                    alertBox.style.display = 'none';
+                }, 5000);
+            }
+            
+            // カテゴリー追加ボタン
+            addBtn.addEventListener('click', function() {
+                const name = nameInput.value.trim();
+                const slug = slugInput.value.trim();
+                
+                if (!name || !slug) {
+                    showAlert('カテゴリー名とスラッグの両方を入力してください', 'warning');
+                    return;
+                }
+                
+                // ボタンを無効化
+                addBtn.disabled = true;
+                addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 追加中...';
+                
+                // AJAX リクエスト
+                fetch("{% url 'deck_intr:add_category_ajax' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        slug: slug
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // 成功時: 新しいチェックボックスを追加
+                        const category = data.category;
+                        const checkbox = document.createElement('label');
+                        checkbox.innerHTML = `
+                            <input type="checkbox" name="categories" value="${category.id}" checked>
+                            ${category.name}
+                        `;
+                        categoriesContainer.appendChild(checkbox);
+                        categoriesContainer.appendChild(document.createElement('br'));
+                        
+                        // 入力欄をクリア
+                        nameInput.value = '';
+                        slugInput.value = '';
+                        
+                        showAlert(`✅ カテゴリー「${category.name}」を追加しました`, 'success');
+                    } else {
+                        showAlert(`❌ ${data.error}`, 'danger');
+                    }
+                })
+                .catch(error => {
+                    showAlert('エラーが発生しました: ' + error, 'danger');
+                })
+                .finally(() => {
+                    // ボタンを有効化
+                    addBtn.disabled = false;
+                    addBtn.innerHTML = '<i class="fas fa-plus"></i> カテゴリーを追加';
+                });
+            });
+            
+            // Enterキーでも追加できるように
+            [nameInput, slugInput].forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addBtn.click();
+                    }
+                });
+            });
+        });
+        </script>
+{% endblock %}

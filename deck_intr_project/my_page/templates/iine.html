@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- iine.html -->
+{% block title %}マイページ{% endblock title %}
+{% block h1 %}マイページ{% endblock %}
+
+{% block content %}
+    <div id="contents">
+        
+        <main class="column">
+        
+            <div class="main-contents">
+            
+                <section>
+                
+                <h2>いいねしたデッキ一覧</h2>
+                {% if decks %}
+                <div class="list-group">
+                    {% for deck in decks %}
+                    <div class="list-group-item list-group-item-action mb-3">
+                        <div class="row">
+                            
+                            <div class="col-md-2">
+                                {% if deck.thumbnail %}
+                                <img src="{{ deck.thumbnail.url }}" alt="{{ deck.title }}" class="img-fluid rounded" style="width: 100%; height: 100px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-secondary d-flex align-items-center justify-content-center rounded" style="width: 100%; height: 100px;">
+                                    <span class="text-white">No Image</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-7">
+                                <h5 class="mb-1">
+                                    <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="text-decoration-none">
+                                        {{ deck.title }}
+                                    </a>
+                                </h5>
+                                <p class="mb-1 text-muted">{{ deck.text|truncatewords:15 }}</p>
+                                <div class="mb-2">
+                                    {% for category in deck.categories.all %}
+                                    <span class="badge bg-primary">{{ category.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> {{ deck.user.username }}
+                                    <i class="fas fa-calendar ms-2"></i> {{ deck.created_at|date:"Y/m/d" }}
+                                </small>
+                            </div>
+                            
+                            <div class="col-md-2 d-flex align-items-center justify-content-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-heart text-danger" style="font-size: 1.5rem;"></i>
+                                    <span style="font-size: 1.5rem; font-weight: bold;">{{ deck.likes_count }}</span>
+                                    <span class="text-muted">いいね</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- ページネーション -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">最初</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">前へ</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">次へ</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i> いいねしたデッキはまだありません
+                </div>
+                {% endif %}
+                    <!-- <div class="list-grid1">
+                    
+                        <div class="list">
+                            <figure><img src="" alt=""></figure>
+                            <div class="text">
+                                <h4>ここにタイトルを入れます</h4>
+                                <p>ここに説明を入れます。サンプルテキスト。ここに説明を入れます。サンプルテキスト。ここに説明を入れます。サンプルテキスト。ここに説明を入れます。サンプルテキスト。</p>
+                            </div>
+                        </div>
+                    </div> -->
+                
+                </section>
+            
+            </div>
+            <!--/.main-contents-->
+            <div class="sub-contents">
+
+                <div class="box1">
+                    
+                    <h3>メニュー見出し</h3>
+                    
+                    <nav>
+                        <ul class="submenu">
+                            <li><a href="{% url 'my_page:my_page' %}">ユーザーホーム</a></li>
+                            <li><a href="{% url 'deck_intr:deck_create' %}">デッキ投稿</a></li>
+                            <li><a href="{% url 'my_page:decks_list' %}">投稿デッキ一覧</a></li>
+                            <li><a href="{% url 'my_page:iine' %}">いいね欄</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">お気に入りユーザー</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">基礎知識</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">faq</a></li>
+                            <!-- <li><a href="service.html">サービスのご案内</a>
+                                <ul>
+                                    <li><a href="service.html">子メニュー</a></li>
+                                    <li><a href="service.html">子メニュー</a></li>
+                                    <li><a href="service.html">子メニュー</a></li>
+                                </ul>
+                            </li> -->
+                        </ul>
+                    </nav>
+                    
+                </div>
+            <!--/.box1-->
+            </div>
+        </main>
+    </div>
+{% endblock content %}

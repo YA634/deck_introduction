@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- ranking.html -->
+{% block title %}ランキング{% endblock %}
+{% block h1 %}ランキング{% endblock %}
+{% block content %}
+
+<div class="container mt-5">
+    
+    <div class="mb-4">
+        <h5>いいね数ランキング TOP {{ total_count }}</h5>
+        <p class="text-muted">いいねが多い順に表示しています</p>
+    </div>
+    
+    {% if decks %}
+    <div class="list-group">
+        {% for deck in decks %}
+        <div class="card-wrapper">
+        <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="card-link"></a>
+            <div class="card deck-card" data-deck-url="{% url 'deck_intr:deck_detail' deck.pk %}">           
+                <div class="list-group-item list-group-item-action mb-3">
+                    <div class="row">
+                        <div class="col-auto d-flex align-items-center">
+                            <div class="ranking-number">
+                                {% if forloop.counter == 1 %}
+                                <span class="badge bg-warning text-dark" style="font-size: 1.5rem;">1位</span>
+                                {% elif forloop.counter == 2 %}
+                                <span class="badge bg-secondary" style="font-size: 1.3rem;">2位</span>
+                                {% elif forloop.counter == 3 %}
+                                <span class="badge bg-info" style="font-size: 1.3rem;">3位</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark" style="font-size: 1.2rem;">{{ forloop.counter }}位</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            {% if deck.thumbnail %}
+                            <img src="{{ deck.thumbnail.url }}" alt="{{ deck.title }}" class="img-fluid rounded" style="width: 100%; height: 100px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-secondary d-flex align-items-center justify-content-center rounded" style="width: 100%; height: 100px;">
+                                <span class="text-white">No Image</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-7">
+                            <h5 class="mb-1">
+                                <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="text-decoration-none" onclick="event.stopPropagation();">
+                                    {{ deck.title }}
+                                </a>
+                            </h5>
+                            <p class="mb-1 text-muted">{{ deck.text|truncatewords:15 }}</p>
+                            <div class="mb-2">
+                                {% for category in deck.categories.all %}
+                                <span class="badge bg-primary">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> <small><a href="{% url 'my_page:user_page' deck.user.username %}" class="text-decoration-none" onclick="event.stopPropagation();">{{ deck.user.username }}</a></small>
+                                <i class="fas fa-calendar ms-2"></i> {{ deck.created_at|date:"Y/m/d" }}
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-center justify-content-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-heart text-danger" style="font-size: 1.5rem;"></i>
+                                <span style="font-size: 1.5rem; font-weight: bold;">{{ deck.likes_count }}</span>
+                                <span class="text-muted">いいね</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- ページネーション -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">最初</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">前へ</a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">次へ</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle"></i> まだデッキが投稿されていません
+    </div>
+    {% endif %}
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'deck_intr:deck_search' %}" class="btn btn-secondary">
+            <i class="fas fa-search"></i> デッキ検索に戻る
+        </a>
+    </div>
+    <br>
+    
+</div>
+{% endblock %}

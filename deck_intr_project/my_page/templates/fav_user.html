@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- fav_user.html -->
+{% block title %}マイページ{% endblock title %}
+{% block h1 %}マイページ{% endblock %}
+
+{% block content %}
+    <div id="contents">
+        
+        <main class="column">
+        
+            <div class="main-contents">
+            
+                <section>
+                
+                <h2>お気に入りユーザー一覧</h2>
+                <div class="container mt-5">
+                    {% if users_with_decks %}
+                        {% for item in users_with_decks %}
+                        <section class="mb-5">
+                            <!-- ユーザー情報ヘッダー -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h4>
+                                                <i class="fas fa-user"></i> 
+                                                <a href="{% url 'my_page:user_page' item.user.username %}" class="text-decoration-none">
+                                                    {{ item.user.username }}
+                                                </a>
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-star"></i> お気に入り
+                                                </span>
+                                            </h4>
+                                            <p class="mb-0">
+                                                <small class="text-muted">
+                                                    投稿デッキ: {{ item.total_decks }}件 | 
+                                                    獲得いいね: {{ item.total_likes }}件 | 
+                                                    お気に入り登録日: {{ item.favorited_at|date:"Y/m/d" }}
+                                                </small>
+                                            </p>
+                                        </div>
+                                        <a href="{% url 'my_page:user_page' item.user.username %}" class="btn btn-outline-primary btn-sm">
+                                            ページを見る
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 最新デッキ3件 -->
+                            {% if item.recent_decks %}
+                            <div class="row">
+                                {% for deck in item.recent_decks %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="card deck-card h-100" data-deck-url="{% url 'deck_intr:deck_detail' deck.pk %}">
+                                        {% if deck.thumbnail %}
+                                        <img src="{{ deck.thumbnail.url }}" class="card-img-top" alt="{{ deck.title }}" style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                            <span class="text-white">No Image</span>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ deck.title }}</h5>
+                                            <p class="card-text">{{ deck.text|truncatewords:15 }}</p>
+                                            
+                                            <div class="mb-2">
+                                                {% for category in deck.categories.all %}
+                                                <span class="badge bg-primary">{{ category.name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-heart text-danger"></i> {{ deck.likes_count }}
+                                                    <i class="fas fa-calendar ms-2"></i> {{ deck.created_at|date:"Y/m/d" }}
+                                                </small>
+                                            </p>
+                                            
+                                            <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="btn btn-primary btn-sm" onclick="event.stopPropagation();">詳細を見る</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                                {% if item.total_decks > 3 %}
+                                <div class="text-end mb-3">
+                                    <a href="{% url 'my_page:user_page' item.user.username %}" class="btn btn-sm btn-secondary">
+                                        {{ item.user.username }}のデッキをもっと見る ({{ item.total_decks }}件)
+                                    </a>
+                                </div>
+                                {% endif %}
+                            
+                            {% else %}
+                            <div class="alert alert-info">
+                                このユーザーはまだデッキを投稿していません。
+                            </div>
+                            {% endif %}
+                        </section>
+                        <hr class="my-5">
+                        {% endfor %}
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> まだお気に入りユーザーを登録していません。
+                        <p class="mt-2 mb-0">
+                            <a href="{% url 'deck_intr:deck_search' %}" class="btn btn-primary btn-sm">デッキを探す</a>
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+                
+                <!-- ページネーション -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">最初</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">前へ</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">次へ</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                </section>
+            
+            </div>
+            <!--/.main-contents-->
+            <div class="sub-contents">
+
+                <div class="box1">
+                    
+                    <h3>メニュー見出し</h3>
+                    
+                    <nav>
+                        <ul class="submenu">
+                            <li><a href="{% url 'my_page:my_page' %}">ユーザーホーム</a></li>
+                            <li><a href="{% url 'deck_intr:deck_create' %}">デッキ投稿</a></li>
+                            <li><a href="{% url 'my_page:decks_list' %}">投稿デッキ一覧</a></li>
+                            <li><a href="{% url 'my_page:iine' %}">いいね欄</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">お気に入りユーザー</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">基礎知識</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">faq</a></li>
+                        </ul>
+                    </nav>
+                    
+                </div>
+            <!--/.box1-->
+            </div>
+        </main>
+    </div>
+{% endblock content %}

@@ -1,0 +1,140 @@
+@charset "utf-8";
+
+
+/*スライドショー
+---------------------------------------------------------------------------*/
+.slide * {margin: 0;padding: 0;}
+
+.slide {
+  position: relative;
+  overflow: hidden;
+}
+
+.slide::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+.slide .text {
+  position: relative;
+  z-index: 2;
+  /* text-shadow: 
+      0 2px 10px rgba(0, 0, 0, 0.8),
+      0 0 20px rgba(32, 32, 134, 0.5); */
+}
+
+/*スライドショー全体を囲むブロック*/
+#mainimg {
+	width: 100%;
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto 50px;
+	margin-bottom: 50px;	/*ボックスの下に空けるスペース*/
+	line-height: 1.5;		/*行間を少し狭く*/
+  /* padding: 0 20px; */
+}
+
+/*３枚の画像の共通設定*/
+#mainimg .slide {
+	position: absolute;right: 0px;top: 0px;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	transition: opacity 1s;	/*ここの1s（＝1秒）を変更すると、フェードのスピードを変更できます。１枚が表示される時間はjsで指定できます。*/
+}
+
+/*１枚目画像（変更不要）*/
+#mainimg .slide:first-child {
+	position: relative;width: 100%;height: auto;
+}
+
+/*画像全般（変更不要）*/
+#mainimg .slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*画像をコンテナのサイズに合わせてクリップ*/
+  object-position: center;	/*画像の中心を基準に*/
+  /* border-radius: 10px; */
+}
+
+
+/*スライドショー上のテキスト
+---------------------------------------------------------------------------*/
+/*テキストブロック*/
+#mainimg .slide .text {
+	position: absolute;
+	bottom: 2rem;
+  left: 2%;
+  width: 96%;
+  display: block;
+	z-index: 10;
+  text-align: center;
+}
+
+/*p（説明テキスト部分）*/
+#mainimg .slide .text p {
+  display: inline-block;
+	font-size: 1.2rem;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  border-radius: 100px;
+  padding: 0.5rem 2rem;
+  color: black;
+}
+
+	/*画面600px以下の追加指定*/
+	@media screen and (max-width:600px) {
+  
+  /*テキストブロック*/
+  #mainimg .slide .text {
+    display: none;  /*スペースが狭くなるので、非表示に*/
+  }
+
+	}/*追加指定ここまで*/
+
+
+
+/*現在表示されているスライドのみをクリック可能にする設定（変更不要）
+---------------------------------------------------------------------------*/
+#mainimg .slide {
+	pointer-events: none; /* デフォルトでクリックを無効にする */
+}
+
+#mainimg .slide.active {
+  pointer-events: auto; /* 表示中のスライドのみクリックを有効にする */
+}
+
+/*現在表示中のボタン
+---------------------------------------------------------------------------*/
+/*全体*/
+#mainimg .slide-indicators {
+  text-align: center;
+	position: absolute;
+	width: 100%;
+	bottom: -40px;	/*ボタンの配置場所。0以上の数値にすれば画像の上に重なります。*/
+	left: 0px;
+}
+/*１個あたり*/
+#mainimg .indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: #ccc;	/*未アクティブ時のボタン色*/
+  border-radius: 50%;
+  margin: 0 5px;
+  cursor: pointer;
+}
+#mainimg .indicator.active {
+  background: var(--primary-color);	/*アクティブ時のボタン色*/
+}
+

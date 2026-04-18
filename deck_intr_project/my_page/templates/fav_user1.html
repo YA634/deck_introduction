@@ -1,0 +1,10 @@
+<div class="container mt-5">
+    <!-- デバッグ表示 -->
+    <div class="alert alert-info">
+        <p>total_favorites: {{ total_favorites }}</p>
+        <p>users_with_decks の数: {{ users_with_decks|length }}</p>
+    </div>
+    
+    {% if users_with_decks %}
+        <p class="alert alert-success">users_with_decks が存在します！</p>
+        {% for item in users_with_decks %}

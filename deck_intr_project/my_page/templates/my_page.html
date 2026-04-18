@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- my_page.html -->
+{% block title %}
+    {% if is_own_page %}
+        マイページ
+    {% else %}
+        {{ profile_user.username }}のページ
+    {% endif %}
+{% endblock title %}
+{% block h1 %}
+    {% if is_own_page %}
+        マイページ
+    {% else %}
+        {{ profile_user.username }}のページ
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div id="contents">
+        
+        <main class="column">
+        
+            <div class="main-contents">
+            
+                <section>
+    
+                        <!-- ユーザー情報 -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3>
+                                <i class="fas fa-user"></i> {{ profile_user.username }}
+                            </h3>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <p><strong>投稿デッキ数:</strong> {{ total_decks }}件</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>獲得いいね総数:</strong> {{ total_likes }}件</p>
+                                </div>
+                            </div>
+                            {% if not is_own_page and request.user.is_authenticated %}
+                            <button class="btn {% if is_favorited %}btn-warning{% else %}btn-outline-warning{% endif %} favorite-btn" 
+                                    data-username="{{ profile_user.username }}"
+                                    data-is-favorited="{{ is_favorited|yesno:'true,false' }}"
+                                    id="favoriteBtn">
+                                <i class="fas fa-star {% if is_favorited %}{% else %}far{% endif %}"></i>
+                                <span id="favoriteText">{% if is_favorited %}お気に入り済み{% else %}お気に入りに追加{% endif %}</span>
+                                <span class="badge bg-light text-dark ms-1" id="favoritesCount">{{ favorites_count }}</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- タブ切り替え -->
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="my-decks-tab" data-bs-toggle="tab" data-bs-target="#my-decks" type="button" role="tab">
+                                投稿したデッキ ({{ total_decks }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="liked-decks-tab" data-bs-toggle="tab" data-bs-target="#liked-decks" type="button" role="tab">
+                                いいねしたデッキ ({{ total_liked_decks }})
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="myTabContent">
+                        
+                        <!-- 投稿したデッキ -->
+                        <!-- <div class="tab-pane fade show active" id="my-decks" role="tabpanel">
+                            <div class="mt-4">
+                                {% if my_decks %}
+                                <div class="row">
+                                    {% for deck in my_decks %}
+                                    <div class="col-md-4 mb-4">
+                                        <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="card-link">
+                                            <div class="card deck-card h-100">
+                                                {% if deck.thumbnail %}
+                                                <img src="{{ deck.thumbnail.url }}" class="card-img-top" alt="{{ deck.title }}" style="height: 200px; object-fit: cover;">
+                                                {% else %}
+                                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                    <span class="text-white">No Image</span>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ deck.title }}</h5>
+                                                    <p class="card-text">{{ deck.text|truncatewords:15 }}</p>
+                                                    
+                                                    <div class="mb-2">
+                                                        {% for category in deck.categories.all %}
+                                                        <span class="badge bg-primary">{{ category.name }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                    
+                                                    <p class="card-text">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-heart text-danger"></i> {{ deck.likes_count }}
+                                                            <i class="fas fa-calendar ms-2"></i> {{ deck.created_at|date:"Y/m/d" }}
+                                                        </small>
+                                                    </p>
+                                                    
+                                                    <div class="d-flex gap-2">
+                                                        <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="btn btn-primary btn-sm">詳細</a>
+                                                        {% if is_own_page %}
+                                                        <a href="#" class="btn btn-success btn-sm">編集</a>
+                                                        <a href="#" class="btn btn-danger btn-sm">削除</a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info mt-4">
+                                    まだデッキを投稿していません。
+                                    <a href="{% url 'deck_intr:deck_create' %}" class="btn btn-primary btn-sm ms-2">デッキを投稿する</a>
+                                </div>
+                                {% endif %}
+                                {% if total_decks > 3 %}
+                                <a href="{% url 'my_page:decks_list' %}" class="btn btn-primary btn-sm">もっと見る ({{ total_decks }}件)</a>
+                                {% endif %}
+                            </div>
+                        </div> -->
+                        <!-- 投稿したデッキ - 修正版（カード全体をaタグで囲まない） -->
+                        <div class="tab-pane fade show active" id="my-decks" role="tabpanel">
+                            <div class="mt-4">
+                                {% if my_decks %}
+                                <div class="row">
+                                    {% for deck in my_decks %}
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card deck-card h-100" data-deck-url="{% url 'deck_intr:deck_detail' deck.pk %}">
+                                            {% if deck.thumbnail %}
+                                            <img src="{{ deck.thumbnail.url }}" class="card-img-top" alt="{{ deck.title }}" style="height: 200px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                <span class="text-white">No Image</span>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="card-body">
+                                                <h5 class="card-title">
+                                                    <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="text-decoration-none">{{ deck.title }}</a>
+                                                </h5>
+                                                <p class="card-text">{{ deck.text|truncatewords:15 }}</p>
+                                                
+                                                <div class="mb-2">
+                                                    {% for category in deck.categories.all %}
+                                                    <span class="badge bg-primary">{{ category.name }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                                
+                                                <p class="card-text">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-heart text-danger"></i> {{ deck.likes_count }}
+                                                        <i class="fas fa-calendar ms-2"></i> {{ deck.created_at|date:"Y/m/d" }}
+                                                    </small>
+                                                </p>
+                                                
+                                                <div class="d-flex gap-2">
+                                                    <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="btn btn-primary btn-sm">詳細</a>
+                                                    {% if is_own_page %}
+                                                    <a href="#" class="btn btn-success btn-sm">編集</a>
+                                                    <a href="#" class="btn btn-danger btn-sm">削除</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info mt-4">
+                                    まだデッキを投稿していません。
+                                    <a href="{% url 'deck_intr:deck_create' %}" class="btn btn-primary btn-sm ms-2">デッキを投稿する</a>
+                                </div>
+                                {% endif %}
+                                {% if total_decks > 3 %}
+                                <a href="{% url 'my_page:decks_list' %}" class="btn btn-primary btn-sm">もっと見る ({{ total_decks }}件)</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- いいねしたデッキ -->
+                        <div class="tab-pane fade" id="liked-decks" role="tabpanel">
+                            <div class="mt-4">
+                                {% if liked_decks %}
+                                <div class="row">
+                                    {% for deck in liked_decks %}
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card deck-card h-100" data-deck-url="{% url 'deck_intr:deck_detail' deck.pk %}">
+                                            {% if deck.thumbnail %}
+                                            <img src="{{ deck.thumbnail.url }}" class="card-img-top" alt="{{ deck.title }}" style="height: 200px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                <span class="text-white">No Image</span>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ deck.title }}</h5>
+                                                <p class="card-text">{{ deck.text|truncatewords:15 }}</p>
+                                                
+                                                <div class="mb-2">
+                                                    {% for category in deck.categories.all %}
+                                                    <span class="badge bg-primary">{{ category.name }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                                
+                                                <p class="card-text">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-user"></i> {{ deck.user.username }}
+                                                        <i class="fas fa-heart text-danger ms-2"></i> {{ deck.likes_count }}
+                                                    </small>
+                                                </p>
+                                                
+                                                <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="btn btn-primary btn-sm">詳細を見る</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info mt-4">
+                                    まだデッキにいいねしていません。
+                                </div>
+                                {% endif %}
+                                {% if total_liked_decks > 3 %}
+                                <a href="{% url 'my_page:iine' %}" class="btn btn-primary btn-sm">もっと見る ({{ total_liked_decks }}件)</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                    </div>
+                
+                </section>
+            
+            </div>
+            <!--/.main-contents-->
+            <div class="sub-contents">
+
+                <div class="box1">
+                    
+                    <h3>メニュー見出し</h3>
+                    
+                    <nav>
+                        <ul class="submenu">
+                            <li><a href="{% url 'my_page:my_page' %}">ユーザーホーム</a></li>
+                            <li><a href="{% url 'deck_intr:deck_create' %}">デッキ投稿</a></li>
+                            <li><a href="{% url 'my_page:decks_list' %}">投稿デッキ一覧</a></li>
+                            <li><a href="{% url 'my_page:iine' %}">いいね欄</a></li>
+                            <li><a href="{% url 'my_page:fav_user' %}">お気に入りユーザー</a></li>
+                            <li><a href="{% url 'my_page:basic_knowledge' %}">基礎知識</a></li>
+                            <li><a href="{% url 'my_page:faq' %}">faq</a></li>
+                            <!-- <li><a href="service.html">サービスのご案内</a>
+                                <ul>
+                                    <li><a href="service.html">子メニュー</a></li>
+                                    <li><a href="service.html">子メニュー</a></li>
+                                    <li><a href="service.html">子メニュー</a></li>
+                                </ul>
+                            </li> -->
+                        </ul>
+                    </nav>
+                    
+                </div>
+            <!--/.box1-->
+            </div>
+        </main>
+    </div>
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteBtn = document.getElementById('favoriteBtn');
+            
+            if (favoriteBtn) {
+                favoriteBtn.addEventListener('click', function() {
+                    const username = this.dataset.username;
+                    const starIcon = this.querySelector('i');
+                    const favoriteText = document.getElementById('favoriteText');
+                    const favoritesCount = document.getElementById('favoritesCount');
+                    const favoritesCountText = document.getElementById('favoritesCountText');
+                    
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                
+                    const csrftoken = getCookie('csrftoken');
+
+
+                    fetch(`/mypage/user/${username}/favorite/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.is_favorited) {
+                                // お気に入りに追加
+                                starIcon.classList.remove('far');
+                                starIcon.classList.add('fas');
+                                favoriteText.textContent = 'お気に入り済み';
+                                this.classList.remove('btn-outline-warning');
+                                this.classList.add('btn-warning');
+                            } else {
+                                // お気に入りから削除
+                                starIcon.classList.remove('fas');
+                                starIcon.classList.add('far');
+                                favoriteText.textContent = 'お気に入りに追加';
+                                this.classList.remove('btn-warning');
+                                this.classList.add('btn-outline-warning');
+                            }
+                            
+                            // お気に入り数を更新
+                            favoritesCount.textContent = data.favorites_count;
+                            favoritesCountText.textContent = data.favorites_count;
+                        } else {
+                            alert(data.error || 'エラーが発生しました');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('エラーが発生しました');
+                    });
+                });
+            }
+        });
+    </script> -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteBtn = document.getElementById('favoriteBtn');
+            
+            if (favoriteBtn) {
+                favoriteBtn.addEventListener('click', function() {
+                    const username = this.dataset.username;
+                    const starIcon = this.querySelector('i');
+                    const favoriteText = document.getElementById('favoriteText');
+                    const favoritesCount = document.getElementById('favoritesCount');
+                    
+                    // CSRFトークンをCookieから取得
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    
+                    const csrftoken = getCookie('csrftoken');
+                    
+                    // DjangoのURLタグを使用してURLを生成
+                    const url = "{% url 'my_page:toggle_favorite_user' 'PLACEHOLDER' %}".replace('PLACEHOLDER', username);
+                    
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            if (data.is_favorited) {
+                                // お気に入りに追加
+                                starIcon.classList.remove('far');
+                                starIcon.classList.add('fas');
+                                favoriteText.textContent = 'お気に入り済み';
+                                this.classList.remove('btn-outline-warning');
+                                this.classList.add('btn-warning');
+                            } else {
+                                // お気に入りから削除
+                                starIcon.classList.remove('fas');
+                                starIcon.classList.add('far');
+                                favoriteText.textContent = 'お気に入りに追加';
+                                this.classList.remove('btn-warning');
+                                this.classList.add('btn-outline-warning');
+                            }
+                            
+                            // お気に入り数を更新
+                            favoritesCount.textContent = data.favorites_count;
+                        } else {
+                            alert(data.error || 'エラーが発生しました');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('エラーが発生しました: ' + error.message);
+                    });
+                });
+            }
+        });
+    </script>
+{% endblock content %}

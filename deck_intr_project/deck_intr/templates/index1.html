@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}遊戯王デッキ紹介 - トップページ{% endblock title %}
+
+{% block hero %}
+<!-- ヒーローセクション -->
+<div class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">遊戯王面白デッキ紹介</h1>
+        <p class="hero-subtitle">ユニークで面白いデッキを共有しよう</p>
+        <div class="hero-buttons">
+            <a href="{% url 'deck_intr:deck_search' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-search"></i> デッキを探す
+            </a>
+            <a href="{% url 'deck_intr:deck_create' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-plus"></i> デッキを投稿
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    
+    <!-- 注目のデッキセクション -->
+    <section class="featured-decks mb-5">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-fire text-danger"></i> 注目のデッキ
+            </h2>
+            <a href="{% url 'deck_intr:ranking' %}" class="view-all-link">
+                すべて見る <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        
+        {% if decks %}
+        <div class="row">
+            {% for deck in decks|slice:":6" %}
+            <div class="col-md-4 mb-4">
+                <div class="card deck-card h-100">
+                    <a href="{% url 'deck_intr:deck_detail' deck.pk %}" class="card-link-overlay"></a>
+                    
+                    {% if deck.thumbnail %}
+                    <div class="card-img-wrapper">
+                        <img src="{{ deck.thumbnail.url }}" class="card-img-top" alt="{{ deck.title }}">
+                        <div class="card-img-overlay-gradient"></div>
+                    </div>
+                    {% else %}
+                    <div class="card-img-placeholder">
+                        <i class="fas fa-image"></i>
+                        <span>No Image</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">{{ deck.title }}</h5>
+                        <p class="card-text text-muted">{{ deck.text|truncatewords:15 }}</p>
+                        
+                        <div class="card-categories mb-2">
+                            {% for category in deck.categories.all|slice:":3" %}
+                            <span class="badge bg-primary">{{ category.name }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="card-footer-info">
+                            <div class="deck-author">
+                                <i class="fas fa-user"></i>
+                                <span>{{ deck.user.username }}</span>
+                            </div>
+                            <div class="deck-likes">
+                                <i class="fas fa-heart text-danger"></i>
+                                <span>{{ deck.likes_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i> まだデッキが投稿されていません
+        </div>
+        {% endif %}
+    </section>
+    
+    <!-- 統計情報セクション -->
+    <section class="stats-section mb-5">
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-number">{{ total_decks|default:"0" }}</div>
+                    <div class="stat-label">投稿デッキ数</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">{{ total_users|default:"0" }}</div>
+                    <div class="stat-label">ユーザー数</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-number">{{ total_likes|default:"0" }}</div>
+                    <div class="stat-label">いいね総数</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA セクション -->
+    <section class="cta-section mb-5">
+        <div class="cta-card">
+            <h3 class="cta-title">あなたのデッキを共有しませんか？</h3>
+            <p class="cta-text">面白いデッキ、ユニークなコンボ、驚きの戦術を持っていますか？<br>ぜひコミュニティと共有してください！</p>
+            <a href="{% url 'deck_intr:deck_create' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> デッキを投稿する
+            </a>
+        </div>
+    </section>
+    
+</div>
+{% endblock content %}

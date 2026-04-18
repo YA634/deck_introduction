@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- faq.html -->
+{% block title %}マイページ{% endblock title %}
+{% block h1 %}マイページ{% endblock %}
+
+{% block content %}
+    <div id="contents">
+        
+        <main class="column">
+        
+            <div class="main-contents">
+            
+                <section>
+                    <h2>よくある質問</h2>
+
+                    <dl class="faq">
+                        <dt class="openclose1">環境デッキ・準環境デッキを投稿してもいいですか？</dt>
+                        <dd>ダメです。ただ環境デッキのギミックを活用することは可能です。</dd>
+
+                        <dt class="openclose1">相手ドロー・スタンバイフェイズに燃やせば先行ワンキルという扱いでいいですか？</dt>
+                        <dd>ダメです。実質先行ワンキルというタグをつけてください</dd>
+
+                        <dt class="openclose1">他の人がSNSに投稿していたデッキを自分でこのサイトに投稿してもいいですか？</dt>
+                        <dd>基本的にはダメですが本人の了承を得ているならば認めます。</dd>
+
+                        <!-- <dt class="openclose1"></dt>
+                        <dd></dd> -->
+                    </dl>
+                </section>
+            
+            </div>
+            <!--/.main-contents-->
+            <div class="sub-contents">
+
+                <div class="box1">
+                    
+                    <h3>メニュー見出し</h3>
+                    
+                    <nav>
+                        <ul class="submenu">
+                            <li><a href="{% url 'my_page:my_page' %}">ユーザーホーム</a></li>
+                            <li><a href="{% url 'deck_intr:deck_create' %}">デッキ投稿</a></li>
+                            <li><a href="{% url 'my_page:decks_list' %}">投稿デッキ一覧</a></li>
+                            <li><a href="{% url 'my_page:iine' %}">いいね欄</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">お気に入りユーザー</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">基礎知識</a></li>
+                            <li><a href="{% url 'my_page:my_page' %}">faq</a></li>
+                        </ul>
+                    </nav>
+                    
+                </div>
+            <!--/.box1-->
+            </div>
+        </main>
+    </div>
+{% endblock content %}
